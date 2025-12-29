@@ -21,9 +21,10 @@
 
 #include "uart_interface.h"
 
-#define retry_count 500U
+#define retry_count 2U
 #define SOP 0x01U
 #define VERBOSE_PRINT 0
+
 
 static CyBtldr_CommunicationsData* g_comm;
 
@@ -41,8 +42,9 @@ int CyBtldr_TransferData(uint8_t* inBuf, int inSize, uint8_t* outBuf, int outSiz
     if (CYRET_SUCCESS == err)
         for(int i=0;i<retry_count;i++)
         {
-            //if needed, read the I2C lines until retry_count; This is required since the target device might not have responded immediately after the command has been sent.
-            err = g_comm->ReadData(outBuf, outSize);
+            //A small delay needed before reading the I2C; This is required because the target device might not have responded immediately after the command has been sent.
+        	Cy_SysLib_Delay(60U);
+        	err = g_comm->ReadData(outBuf, outSize);
             if(outBuf[0]==SOP)    // break once you get a valid response ie. a SOP at buffer[0]
                 break;
         }
